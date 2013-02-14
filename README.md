@@ -13,6 +13,6 @@ Try to demonstrate a knowledge of object-oriented concepts and domain-driven des
 
 1. Please fork this repository before you start the assessment.
 
-3. You will need to provide your own Twitter and Facebook apps for authentication.
+3. You will need to provide your own Twitter app for authentication.
 
 Good luck!
