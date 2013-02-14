@@ -1,7 +1,7 @@
 PHP Developer Assessment
 =======================================
 
-The task is to developer a simple web application which users can sign into with their Twitter account. The user's Twitter access credentials and any additional information you deem necessary should be persisted to the database.
+The task is to developer a simple web application which users can sign into with their Twitter account. The user's Twitter access credentials and any additional information you deem necessary should be persisted to a database.
 When authenticated, the user should be able to access the URL '/profile' and see details of their Twitter user profile including name and bio. It should also display the user's current Twitter avatar and include a link to their actual Twitter profile.
 
 This repository includes an out of the box Symfony Standard 2.1.7 codebase, but feel free to user the Silex micro framework, Zend Framework 2, or even build from scratch.
