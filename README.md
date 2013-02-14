@@ -1,4 +1,4 @@
-Web Developer Assessment
+PHP Developer Assessment
 =======================================
 
 The task is to developer a simple web application which users can sign into with their Twitter account. The user's Twitter access credentials and any additional information you deem necessary should be persisted to the database.
