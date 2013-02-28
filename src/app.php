@@ -32,10 +32,36 @@ $app->register(new Silex\Provider\TwigServiceProvider(), array(
     'twig.class_path' => __DIR__.'/../vendor/Twig/lib',
 ));
 
+// Add url generator
+$app->register(new Silex\Provider\UrlGeneratorServiceProvider());
+
 
 // ******* Application *****
 $app->get('/', function(Application $app) {
 	return $app['twig']->render('index.html.twig');
-});
+})->bind('homepage');
 
+$app->get('/signin', function(Application $app) {
+	// Create TwitterOAuth instance  
+	$twitteroauth = new TwitterOAuth($app['api_twitter']['consumer_key'], $app['api_twitter']['consumer_secret']);
+	// Get authentication tokens and redirect to profile 
+	$auth_tokens = $twitteroauth->getRequestToken($app['url_generator']->generate('profile', array(), 1));  
+	// Save into the session  
+	$app['session']->set('oauth_token', $auth_tokens['oauth_token']);  
+	$app['session']->set('oauth_token_secret', $auth_tokens['oauth_token_secret']);
+
+	// Twitter accept oauth:  
+	if($twitteroauth->http_code==200){  
+	    // Redirect to profile:
+	    $url = $twitteroauth->getAuthorizeURL($auth_tokens['oauth_token']); 
+	    return $app->redirect($url);
+	} else { 
+		return $app->redirect('/index');
+	}
+
+})->bind('signin');
+
+$app->get('/profile', function(Application $app) {
+	return "profile";
+})->bind('profile');
 return $app;
