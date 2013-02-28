@@ -49,8 +49,6 @@ $app->error(function (\Exception $e, $code, $message = "") use ($app) {
 	 		$error_message = "Sorry, the requested page could not be found.";
 
 	 } 
-
-	 // return new Response($error_message, $code);
 	 return $app['twig']->render('error.html.twig', array('error_message' => $error_message));
 });
 
@@ -85,17 +83,15 @@ $app->get('/login', function(Application $app, Request $request) {
 	$oauth_token_secret = $app['session']->get('oauth_token_secret');
 	// Check if user is oauth:
 	if(!empty($params['oauth_verifier']) && !empty($oauth_token) && !empty($oauth_token_secret)){  
-		// TwitterOAuth instance, with two new parameters we got in twitter_login.php  
-		$twitteroauth = new TwitterOAuth('poNFJDLXisk6SL4YJtuag', 'DdkLMKtxFhrHJJBFhItwo3xqvrH2P4TseDv2o61YUV0', $app['session']->get('oauth_token'), $app['session']->get('oauth_token_secret'));  
+		// TwitterOAuth instance, with two new parameters  
+		$twitteroauth = new TwitterOAuth($app['api_twitter']['consumer_key'], $app['api_twitter']['consumer_secret'], $app['session']->get('oauth_token'), $app['session']->get('oauth_token_secret'));  
 		// Let's request the access token  
 		$access_token = $twitteroauth->getAccessToken($params['oauth_verifier']); 
-		// Save it in a session var 
+		 
 		$app['session']->set('access_token', $access_token); 
-		// Let's get the user's info 
+		// user's info 
 		$user_info = $twitteroauth->get('account/verify_credentials'); 
-		// Print user's info  
-		// print_r($user_info);
-		// return print_r($user_info);  
+
 		$user = new User($app['db'], $user_info->id);
 
 		// User is not stored in our db:
@@ -106,7 +102,10 @@ $app->get('/login', function(Application $app, Request $request) {
 			$user->updateToken($access_token);
 		}
 
+		// Store info into session;
 		$app['session']->set('uid', $user->getUid());
+		$app['session']->set('oauth_token', $user->getToken());
+		$app['session']->set('oauth_token_secret', $user->getSecret());
 
 		return $app->redirect('/profile');
 
@@ -127,9 +126,18 @@ $app->get('/profile', function(Application $app) {
 	} else{
 		// Check right user into session:
 		$user = new User($app['db'], $uid);
+		$twitteroauth = new TwitterOAuth($app['api_twitter']['consumer_key'], $app['api_twitter']['consumer_secret'], $app['session']->get('oauth_token'), $app['session']->get('oauth_token_secret'));  
+		if($user->exist())
+			$user_info = $twitteroauth->get('account/verify_credentials');
+		//If ok display profile:
+		if($user_info->name){
+			return $app['twig']->render('profile.html.twig',array('username' => $user_info->name, 'bio' => $user_info->description, 'img_url' =>$user_info->profile_image_url));
+		} else {
+			$app->abort(500);
+		}
 		
 	}
-	return $app['twig']->render('profile.html.twig');
+	
 })->bind('profile');
 
  
