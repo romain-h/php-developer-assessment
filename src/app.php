@@ -6,6 +6,9 @@ require(__DIR__."/twitteroauth/twitteroauth.php");
 use Silex\Application;
 use Igorw\Silex\ConfigServiceProvider;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request;
+use PeerindexChallenge\User;
+use Silex\Provider\DoctrineServiceProvider;
 
 $app = new Silex\Application();
 
@@ -52,15 +55,14 @@ $app->error(function (\Exception $e, $code, $message = "") use ($app) {
 });
 
 $app->get('/', function(Application $app) {
-	$app->abort(404);
 	return $app['twig']->render('index.html.twig');
 })->bind('homepage');
 
 $app->get('/signin', function(Application $app) {
 	// Create TwitterOAuth instance  
 	$twitteroauth = new TwitterOAuth($app['api_twitter']['consumer_key'], $app['api_twitter']['consumer_secret']);
-	// Get authentication tokens and redirect to profile 
-	$auth_tokens = $twitteroauth->getRequestToken($app['url_generator']->generate('profile', array(), 1));  
+	// Get authentication tokens and redirect to login 
+	$auth_tokens = $twitteroauth->getRequestToken($app['url_generator']->generate('login', array(), 1));  
 	// Save into the session  
 	$app['session']->set('oauth_token', $auth_tokens['oauth_token']);  
 	$app['session']->set('oauth_token_secret', $auth_tokens['oauth_token_secret']);
@@ -72,15 +74,62 @@ $app->get('/signin', function(Application $app) {
 	    return $app->redirect($url);
 	} else { 
 		// Handle with error:.  
-		$app->abort(601);
+		$app->abort(500);
 	}
 
 })->bind('signin');
 
-$app->get('/profile', function(Application $app) {
-	// Check if user is already logedin:
+$app->get('/login', function(Application $app, Request $request) {
+	$params = $request->query->all();
+	$oauth_token = $app['session']->get('oauth_token');
+	$oauth_token_secret = $app['session']->get('oauth_token_secret');
+	// Check if user is oauth:
+	if(!empty($params['oauth_verifier']) && !empty($oauth_token) && !empty($oauth_token_secret)){  
+		// TwitterOAuth instance, with two new parameters we got in twitter_login.php  
+		$twitteroauth = new TwitterOAuth('poNFJDLXisk6SL4YJtuag', 'DdkLMKtxFhrHJJBFhItwo3xqvrH2P4TseDv2o61YUV0', $app['session']->get('oauth_token'), $app['session']->get('oauth_token_secret'));  
+		// Let's request the access token  
+		$access_token = $twitteroauth->getAccessToken($params['oauth_verifier']); 
+		// Save it in a session var 
+		$app['session']->set('access_token', $access_token); 
+		// Let's get the user's info 
+		$user_info = $twitteroauth->get('account/verify_credentials'); 
+		// Print user's info  
+		// print_r($user_info);
+		// return print_r($user_info);  
+		$user = new User($app['db'], $user_info->id);
 
-	return "profile";
+		// User is not stored in our db:
+		if(!$user->exist()){
+			$user->add($user_info, $access_token);
+		} else {
+			// Update token if already stored:
+			$user->updateToken($access_token);
+		}
+
+		$app['session']->set('uid', $user->getUid());
+
+		return $app->redirect('/profile');
+
+	} else {
+		// Something's missing, go back sigin  
+    	return $app->redirect('/signin'); 
+	}
+	
+
+	
+})->bind('login');
+
+$app->get('/profile', function(Application $app) {
+	$uid = $app['session']->get('uid');
+	// User not loged in..
+	if(empty($uid)){
+		return $app->redirect('/');
+	} else{
+		// Check right user into session:
+		$user = new User($app['db'], $uid);
+		
+	}
+	return $app['twig']->render('profile.html.twig');
 })->bind('profile');
 
  
