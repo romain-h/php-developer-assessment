@@ -7,5 +7,9 @@
 		"user": YOUR_DB_USER,
 		"password": YOUR_DB_PASSWORD,
 		"charset": YOUR_CHARSET
+	},
+	"api_twitter":{
+		"consumer_key": YOUR_CONSUMER_KEY_TWITTER,
+		"consumer_secret": YOUR_SECRET_KEY_TWITTER
 	}
 }

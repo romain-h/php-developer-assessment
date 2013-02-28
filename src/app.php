@@ -1,6 +1,7 @@
 <?php
 // (*****  Bootstrap *****
 require_once __DIR__.'/../vendor/autoload.php';
+require(__DIR__."/twitteroauth/twitteroauth.php");
 
 use Silex\Application;
 use Igorw\Silex\ConfigServiceProvider;
