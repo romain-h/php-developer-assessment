@@ -5,3 +5,6 @@
 /app/logs/*
 /vendor/*
 /web/bundles/*
+composer.phar
+/config/dev.json
+/config/prod.json

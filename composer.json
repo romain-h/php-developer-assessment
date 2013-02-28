@@ -19,5 +19,10 @@
         "symfony/twig-bridge": "~2.1",
         "doctrine/dbal": ">=2.2.0,<2.4.0-dev",
         "swiftmailer/swiftmailer": "4.1.*"
+    },
+    "autoload": {
+        "psr-0": {
+            "Igorw": "src/"
+        }
     }
 }
