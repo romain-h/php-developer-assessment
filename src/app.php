@@ -35,7 +35,7 @@ $app->register(new Silex\Provider\TwigServiceProvider(), array(
 
 // ******* Application *****
 $app->get('/', function(Application $app) {
-	return "Init ok";
+	return $app['twig']->render('index.html.twig');
 });
 
 return $app;
