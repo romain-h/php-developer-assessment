@@ -1,3 +1,11 @@
 {
-	'debug': false
+	"debug": false
+	"config_db":{
+		"driver": YOUR_DB_DRIVER,
+		"host": YOUR_HOST,
+		"dbname": YOUR_DB_NAME,
+		"user": YOUR_DB_USER,
+		"password": YOUR_DB_PASSWORD,
+		"charset": YOUR_CHARSET
+	}
 }
