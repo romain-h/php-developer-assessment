@@ -5,6 +5,7 @@ require(__DIR__."/twitteroauth/twitteroauth.php");
 
 use Silex\Application;
 use Igorw\Silex\ConfigServiceProvider;
+use Symfony\Component\HttpFoundation\Response;
 
 $app = new Silex\Application();
 
@@ -37,7 +38,21 @@ $app->register(new Silex\Provider\UrlGeneratorServiceProvider());
 
 
 // ******* Application *****
+// Error handler
+$app->error(function (\Exception $e, $code, $message = "") use ($app) { 
+	$error_message = "Oups... Something goes wrong... :(";
+	switch ($code) {
+	 	case 404:
+	 		$error_message = "Sorry, the requested page could not be found.";
+
+	 } 
+
+	 // return new Response($error_message, $code);
+	 return $app['twig']->render('error.html.twig', array('error_message' => $error_message));
+});
+
 $app->get('/', function(Application $app) {
+	$app->abort(404);
 	return $app['twig']->render('index.html.twig');
 })->bind('homepage');
 
@@ -56,12 +71,18 @@ $app->get('/signin', function(Application $app) {
 	    $url = $twitteroauth->getAuthorizeURL($auth_tokens['oauth_token']); 
 	    return $app->redirect($url);
 	} else { 
-		return $app->redirect('/index');
+		// Handle with error:.  
+		$app->abort(601);
 	}
 
 })->bind('signin');
 
 $app->get('/profile', function(Application $app) {
+	// Check if user is already logedin:
+
 	return "profile";
 })->bind('profile');
+
+ 
+
 return $app;
